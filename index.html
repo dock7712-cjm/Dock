@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<title>Dock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--red:#ff2b3a;--red2:#ff2b3a55;--red3:#ff2b3a22;--txt:#f2d8da;--dim:#9a6a6e;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:#000}
+body{min-height:100dvh;color:var(--txt);font-family:"Rajdhani",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:1.05rem;letter-spacing:.02em;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;max-width:720px;margin:0 auto}
+.logo{font-weight:300;font-size:1.7rem;letter-spacing:.55em;color:#fff;margin:0}
+.btn{font:inherit;background:none;color:var(--red);border:1px solid var(--red2);padding:7px 14px;cursor:pointer;letter-spacing:.08em;border-radius:2px}
+.btn:hover,.btn:focus-visible{background:var(--red3);outline:none;border-color:var(--red)}
+.btn.solid{background:var(--red);color:#000;font-weight:600;text-decoration:none;display:inline-block;border-color:var(--red)}
+main{max-width:720px;margin:0 auto;padding:0 18px 30px}
+#eyeBtn{display:block;margin:0 auto;width:min(80vw,400px,44vh);background:none;border:0;padding:0;cursor:pointer;border-radius:50%}
+#eyeBtn:focus-visible{outline:1px solid var(--red);outline-offset:6px}
+#eye{width:100%;height:auto;display:block;filter:drop-shadow(0 0 10px rgba(255,30,45,.45));transition:filter .4s}
+#eye.speaking{filter:drop-shadow(0 0 22px rgba(255,30,45,.8))}
+.rot{transform-origin:200px 200px}
+.rg{fill:none;stroke:var(--red)}
+.r1{stroke-width:2;stroke-dasharray:1 7;opacity:.55;animation:spin 90s linear infinite}
+.r2{stroke-width:1;stroke-dasharray:60 10 6 10;opacity:.7;animation:spin 50s linear infinite reverse}
+.r3{stroke-width:.8;opacity:.45}
+.arc{fill:none;stroke:var(--red);stroke-width:2.2;stroke-linecap:round;animation:spin 14s linear infinite}
+.arc.b{animation-duration:22s;animation-direction:reverse;stroke-width:1.2;opacity:.7}
+.fib{animation:spin 30s linear infinite}
+.fib2{animation:spin 45s linear infinite reverse}
+.pupil{transition:transform .35s}
+.lid{animation:blink 6.5s infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96.5%{transform:scaleY(.05)}}
+@keyframes beat{from{transform:scale(.8)}to{transform:scale(1.3)}}
+@keyframes ping{50%{opacity:1}}
+#eye.speaking .pupil{animation:beat .42s ease-in-out infinite alternate}
+#eye.speaking .fib{animation-duration:5s}
+#eye.listening .pupil{transform:scale(.6)}
+#eye.listening .r3{stroke-width:2;opacity:1}
+#eye.listening .r1{opacity:1}
+#eye.thinking .arc{animation-duration:1.4s}
+#eye.thinking .arc.b{animation-duration:2.2s}
+@media (prefers-reduced-motion:reduce){.r1,.r2,.arc,.fib,.fib2,.lid{animation:none}}
+#state{text-align:center;color:var(--red);font-size:.9rem;letter-spacing:.3em;height:1.4em;margin:6px 0 0}
+#say{text-align:center;font-size:1.3rem;font-weight:300;color:#fff;min-height:3.4em;margin:6px 0 0}
+#heard{text-align:center;color:var(--dim);min-height:1.4em;font-size:.95rem;margin:0}
+.bar{display:flex;gap:10px;margin:14px 0 6px;align-items:flex-end}
+.bar input{flex:1}
+input,select{font:inherit;color:#fff;background:none;border:0;border-bottom:1px solid var(--red2);padding:8px 2px;border-radius:0;width:100%;color-scheme:dark}
+input:focus,select:focus{outline:none;border-color:var(--red)}
+select option{background:#000}
+.quick{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.card{border:1px solid var(--red2);padding:16px;margin-top:12px;background:#0a0000}
+.card label{display:block;font-size:.85rem;color:var(--dim);margin-top:12px}
+.card label:first-child{margin-top:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chk{display:flex!important;gap:10px;align-items:center;color:var(--txt)!important;font-size:1rem!important}
+.chk input{width:auto}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--red3)}
+.item small{color:var(--dim);display:block}
+.item:last-child{border:0}
+h2{font-weight:300;font-size:1.1rem;letter-spacing:.2em;color:var(--red);margin:0 0 8px}
+</style>
+</head>
+<body>
+<header class="top">
+<h1 class="logo">DOCK</h1>
+<button class="btn" id="conn">Conectar Google</button>
+</header>
+<main>
+<button id="eyeBtn" aria-label="Toque para falar com o Dock">
+<svg id="eye" viewBox="0 0 400 400" role="img" aria-label="Olho do Dock">
+<defs><radialGradient id="ir" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1a0003"/><stop offset=".45" stop-color="#7a0010"/><stop offset=".85" stop-color="#ff1f2e"/><stop offset="1" stop-color="#ff7a82"/></radialGradient></defs>
+<circle class="rg rot r1" cx="200" cy="200" r="192"/>
+<circle class="rg rot r2" cx="200" cy="200" r="174"/>
+<circle class="rg r3" cx="200" cy="200" r="156"/>
+<path class="arc rot" d="M200 28A172 172 0 0 1 372 200"/>
+<path class="arc b rot" d="M200 372A172 172 0 0 1 28 200"/>
+<path d="M200 0v16M200 384v16M0 200h16M384 200h16" stroke="#ff2b3a" stroke-width=".8" opacity=".6"/>
+<g id="gaze"><g class="lid rot">
+<circle cx="200" cy="200" r="112" fill="#050001" stroke="#ff2b3a" stroke-width=".8"/>
+<circle cx="200" cy="200" r="98" fill="url(#ir)"/>
+<circle class="fib rot" cx="200" cy="200" r="82" fill="none" stroke="#ffb3b8" stroke-width="14" stroke-dasharray="1.2 7" opacity=".35"/>
+<circle class="fib2 rot" cx="200" cy="200" r="64" fill="none" stroke="#000" stroke-width="10" stroke-dasharray="2 9" opacity=".45"/>
+<circle class="pupil rot" cx="200" cy="200" r="34" fill="#000" stroke="#ff2b3a" stroke-width="1.2"/>
+<path d="M168 176A40 40 0 0 1 196 160" stroke="#fff" stroke-width="2" fill="none" opacity=".55" stroke-linecap="round"/>
+</g></g>
+</svg>
+</button>
+<p id="state">EM ESPERA</p>
+<p id="say">Olá. Toque no olho e fale.</p>
+<p id="heard"></p>
+<div class="bar"><input id="cmd" placeholder="Ou digite um comando" aria-label="Comando em texto"><button class="btn" id="send">Enviar</button></div>
+<div class="quick">
+<button class="btn" data-q="minha agenda de hoje">Agenda de hoje</button>
+<button class="btn" data-q="verificar meus e-mails">Ler e-mails</button>
+</div>
+<div id="panel"></div>
+</main>
+
+<script>
+/* ============ CONFIGURAÇÃO ============
+   Cole aqui o "ID do cliente" criado no Google Cloud (termina com .apps.googleusercontent.com).
+   Sem ele, o Dock funciona em modo simples: abre o Google Agenda já preenchido. */
+var CLIENT_ID='960134585620-8bq6mh3dtjad9sullm10u335177hf41c.apps.googleusercontent.com';
+var SCOPES='https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/gmail.readonly';
+
+(function(){
+var $=function(i){return document.getElementById(i)};
+var pad=function(n){return String(n).padStart(2,'0')};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var fold=function(s){return s.toLowerCase().replace(/[áàâãä]/g,'a').replace(/[éèêë]/g,'e').replace(/[íìîï]/g,'i').replace(/[óòôõö]/g,'o').replace(/[úùûü]/g,'u').replace(/ç/g,'c')};
+var ymd=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var fmt=function(d){return ymd(d).replace(/-/g,'')+'T'+pad(d.getHours())+pad(d.getMinutes())+'00'};
+var token=null,tc=null,state='idle';
+
+/* ---------- estado do olho ---------- */
+var LABEL={idle:'EM ESPERA',listening:'OUVINDO',thinking:'PROCESSANDO',speaking:'RESPONDENDO'};
+function setState(s){state=s;$('eye').setAttribute('class',s);$('state').textContent=LABEL[s]}
+function say(msg){
+  $('say').textContent=msg;setState('speaking');
+  var done=function(){if(state==='speaking')setState('idle')};
+  try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(msg);u.lang='pt-BR';u.onend=done;u.onerror=done;speechSynthesis.speak(u)}catch(e){setTimeout(done,2000)}
+}
+
+/* ---------- movimento do olhar ---------- */
+(function(){
+  var gz=$('gaze'),gx=0,gy=0,tx=0,ty=0,next=0,pm=0,calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  addEventListener('pointermove',function(e){var r=$('eye').getBoundingClientRect();
+    tx=Math.max(-1,Math.min(1,(e.clientX-r.left-r.width/2)/r.width))*24;
+    ty=Math.max(-1,Math.min(1,(e.clientY-r.top-r.height/2)/r.height))*18;pm=performance.now()});
+  (function loop(t){
+    if(state==='speaking'){if(t>next){tx=(Math.random()*2-1)*26;ty=(Math.random()*2-1)*18;next=t+300+Math.random()*600}}
+    else if(state==='listening'||state==='thinking'){tx=0;ty=0}
+    else if(!calm&&t-pm>3000){tx=Math.sin(t/2300)*14;ty=Math.cos(t/3100)*9}
+    gx+=(tx-gx)*.12;gy+=(ty-gy)*.12;
+    gz.setAttribute('transform','translate('+gx.toFixed(1)+' '+gy.toFixed(1)+')');
+    requestAnimationFrame(loop)})(0);
+})();
+
+/* ---------- entendimento do comando ---------- */
+function parse(text){
+  var t=text,n=fold(text),hd=false,ht=false;
+  function take(re){var m=re.exec(n);if(!m)return null;var s=m.index,l=m[0].length,b=' '.repeat(l);t=t.slice(0,s)+b+t.slice(s+l);n=n.slice(0,s)+b+n.slice(s+l);return m}
+  var now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate()),d=new Date(today),m;
+  var online=/\b(online|meet|video ?chamada|videoconferencia|virtual)\b/.test(n);
+  if(take(/\bdepois de amanha\b/)){d.setDate(d.getDate()+2);hd=true}
+  else if(take(/\bamanha\b/)){d.setDate(d.getDate()+1);hd=true}
+  else if(take(/\bhoje\b/)){hd=true}
+  else if((m=take(/\b(segunda|terca|quarta|quinta|sexta|sabado|domingo)(-feira)?\b/))){
+    var wd={domingo:0,segunda:1,terca:2,quarta:3,quinta:4,sexta:5,sabado:6}[m[1]];
+    d.setDate(d.getDate()+(((wd-today.getDay()+7)%7)||7));hd=true;
+  }else if((m=take(/\b(\d{1,2})\/(\d{1,2})\b/))){
+    d=new Date(today.getFullYear(),+m[2]-1,+m[1]);if(d<today)d.setFullYear(d.getFullYear()+1);hd=true;
+  }else if((m=take(/\bdia (\d{1,2})\b/))){
+    d.setDate(+m[1]);if(d<today)d.setMonth(d.getMonth()+1);hd=true;
+  }
+  var h=9,mi=0;
+  if(take(/\bmeio[- ]dia\b/)){h=12;ht=true}
+  else if((m=take(/\b(\d{1,2})\s*(?::|h(?:oras?)?)\s*(\d{2})?/))||(m=take(/\bas (\d{1,2})\b/))){h=+m[1];mi=+(m[2]||0);ht=true}
+  if(take(/\be meia\b/))mi=30;
+  var p=take(/\bda (tarde|noite|manha)\b/);
+  if(p&&p[1]!=='manha'&&h<12)h+=12;
+  var title=t.replace(/\s+/g,' ').trim()
+    .replace(/^(por favor,? )?(marque|marcar|agende|agendar|crie|criar|coloque|colocar|adicione|adicionar)( uma| um)? /i,'');
+  var edge=/^(para|pra|na|no|em|as|às|a|de|do|da|e)\s+|\s+(para|pra|na|no|em|as|às|a|de|do|da|e)$/i;
+  while(edge.test(title))title=title.replace(edge,'');
+  title=title.replace(/[,.]+$/,'');
+  if(!title)title='Compromisso';
+  title=title.charAt(0).toUpperCase()+title.slice(1);
+  return{title:title,date:ymd(d),time:pad(h)+':'+pad(mi),online:online,hd:hd,ht:ht};
+}
+function human(r){
+  return new Date(r.date+'T12:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+', às '+r.time.replace(':','h');
+}
+
+/* ---------- Google ---------- */
+function setConn(){$('conn').textContent=token?'Google conectado ✓':'Conectar Google'}
+function connect(){
+  if(!CLIENT_ID){say('Falta colar o ID do cliente Google no arquivo. Por enquanto uso o modo simples.');return}
+  if(!window.google||!google.accounts){say('A biblioteca do Google ainda não carregou. Verifique a internet e tente de novo.');return}
+  if(!tc)tc=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:function(r){
+    if(r&&r.access_token){token=r.access_token;setConn();say('Google conectado. Agenda e e-mail liberados.')}
+    else say('Não consegui conectar ao Google.')}});
+  tc.requestAccessToken({prompt:token?'':'consent'});
+}
+async function api(url,opt){
+  if(!token)throw new Error('Conecte o Google primeiro.');
+  opt=opt||{};opt.headers=Object.assign({},opt.headers,{Authorization:'Bearer '+token});
+  var r=await fetch(url,opt);
+  if(r.status===401){token=null;setConn();throw new Error('A sessão expirou. Toque em Conectar Google.')}
+  if(!r.ok)throw new Error('Erro '+r.status+' do Google.');
+  return r.json();
+}
+if(CLIENT_ID){var sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;document.head.appendChild(sc)}
+$('conn').addEventListener('click',connect);
+
+/* ---------- cartão de evento ---------- */
+function eventCard(r,extra){
+  var p=$('panel');
+  p.innerHTML='<div class="card"><label for="t">Compromisso</label><input id="t" value="'+esc(r.title)+'">'
+   +'<div class="two"><div><label for="d">Dia</label><input id="d" type="date" value="'+r.date+'"></div><div><label for="h">Hora</label><input id="h" type="time" value="'+r.time+'"></div></div>'
+   +'<label for="u">Duração</label><select id="u"><option value="30">30 minutos</option><option value="60" selected>1 hora</option><option value="90">1 hora e 30</option><option value="120">2 horas</option></select>'
+   +'<label class="chk"><input id="o" type="checkbox"'+(r.online?' checked':'')+'> Reunião online (Google Meet)</label>'
+   +'<div class="acts" id="acts"></div></div>';
+  var acts=$('acts');
+  function range(){var s=new Date($('d').value+'T'+($('h').value||'09:00'));return[s,new Date(s.getTime()+(+$('u').value)*60000)]}
+  function draw(){
+    acts.innerHTML='';
+    if(token){
+      var b=document.createElement('button');b.className='btn solid';b.textContent='Confirmar na agenda';
+      b.onclick=async function(){
+        try{
+          setState('thinking');var rg=range(),tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+          var body={summary:$('t').value,start:{dateTime:rg[0].toISOString(),timeZone:tz},end:{dateTime:rg[1].toISOString(),timeZone:tz}};
+          if($('o').checked)body.conferenceData={createRequest:{requestId:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),conferenceSolutionKey:{type:'hangoutsMeet'}}};
+          var ev=await api('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+          say('Pronto. Evento criado'+(ev.hangoutLink?', com link do Meet.':'.'));
+          $('panel').innerHTML='<div class="card"><h2>EVENTO CRIADO</h2><div>'+esc(ev.summary||'')+'</div>'+(ev.hangoutLink?'<div class="acts"><a class="btn solid" target="_blank" rel="noopener" href="'+esc(ev.hangoutLink)+'">Abrir Meet</a></div>':'')+'</div>';
+        }catch(e){setState('idle');say(e.message)}
+      };
+      acts.appendChild(b);
+    }else{
+      var rg=range();if(isNaN(rg[0]))return;
+      var u='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent($('t').value)+'&dates='+fmt(rg[0])+'/'+fmt(rg[1]);
+      if($('o').checked)u+='&location='+encodeURIComponent('Google Meet')+'&details='+encodeURIComponent('Reunião online. Toque em “Adicionar videoconferência do Google Meet” antes de salvar.');
+      var a=document.createElement('a');a.className='btn solid';a.target='_blank';a.rel='noopener';a.href=u;a.textContent='Abrir no Google Agenda';acts.appendChild(a);
+    }
+    if(extra)acts.appendChild(extra);
+  }
+  ['t','d','h','u','o'].forEach(function(i){$(i).addEventListener('input',draw)});
+  draw();
+}
+function newEvent(r){say('Entendi: '+r.title+', '+human(r)+'. Confira e confirme.');eventCard(r)}
+
+/* ---------- agenda ---------- */
+async function showAgenda(off){
+  if(!token){say('Conecte o Google para eu ler a sua agenda.');return}
+  var a=new Date();a.setHours(0,0,0,0);a.setDate(a.getDate()+off);var b=new Date(a);b.setDate(b.getDate()+1);
+  var j=await api('https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&timeMin='+encodeURIComponent(a.toISOString())+'&timeMax='+encodeURIComponent(b.toISOString()));
+  var ev=j.items||[],day=off?'amanhã':'hoje',p=$('panel');
+  p.innerHTML='<div class="card"><h2>AGENDA — '+day.toUpperCase()+'</h2>'+(ev.length?'':'<div>Nada marcado.</div>')+'</div>';
+  ev.forEach(function(e){
+    var s=e.start&&e.start.dateTime?new Date(e.start.dateTime):null,hr=s?pad(s.getHours())+'h'+pad(s.getMinutes()):'dia todo';
+    var row=document.createElement('div');row.className='item';row.innerHTML='<div>'+esc(e.summary||'(sem título)')+'</div><div>'+hr+'</div>';
+    p.firstChild.appendChild(row);
+  });
+  if(!ev.length)return say('Você não tem compromissos '+day+'.');
+  var lst=ev.slice(0,4).map(function(e){var s=e.start&&e.start.dateTime?new Date(e.start.dateTime):null;return(s?'às '+s.getHours()+'h'+(s.getMinutes()?pad(s.getMinutes()):'')+', ':'')+(e.summary||'sem título')}).join('; ');
+  say('Você tem '+ev.length+' compromisso'+(ev.length>1?'s':'')+' '+day+': '+lst+'.');
+}
+
+/* ---------- e-mail ---------- */
+async function scanMail(){
+  if(!token){say('Conecte o Google para eu ler os seus e-mails.');return}
+  var l=await api('https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=20&q='+encodeURIComponent('in:inbox newer_than:7d'));
+  var ids=(l.messages||[]).map(function(m){return m.id});
+  var ms=await Promise.all(ids.map(function(id){return api('https://www.googleapis.com/gmail/v1/users/me/messages/'+id+'?format=metadata&metadataHeaders=Subject&metadataHeaders=From')}));
+  var kw=/\b(reuniao|reunioes|convite|prazo|vence|vencimento|entrega|consulta|evento|call|apresentacao|agendar|marcar|webinar|audiencia|meeting|invitation)\b/;
+  var sug=[];
+  ms.forEach(function(m){
+    var hs={};(m.payload&&m.payload.headers||[]).forEach(function(h){hs[h.name]=h.value});
+    var subj=hs.Subject||'(sem assunto)',txt=subj+' '+(m.snippet||'');
+    if(!kw.test(fold(txt)))return;
+    sug.push({subj:subj,from:(hs.From||'').replace(/<.*>/,'').trim(),r:parse(txt)});
+  });
+  var p=$('panel');p.innerHTML='<div class="card"><h2>POSSÍVEIS COMPROMISSOS</h2>'+(sug.length?'':'<div>Nada novo nos últimos 7 dias.</div>')+'</div>';
+  sug.forEach(function(s){
+    var row=document.createElement('div');row.className='item';
+    row.innerHTML='<div>'+esc(s.subj)+'<small>'+esc(s.from)+(s.r.hd?' · '+esc(human(s.r)):'')+'</small></div>';
+    var b=document.createElement('button');b.className='btn';b.textContent='Adicionar';
+    b.onclick=function(){var r=s.r;r.title=s.subj;if(!r.hd){var d=new Date();d.setDate(d.getDate()+1);r.date=ymd(d)}eventCard(r);say('Ajuste o dia e a hora e confirme.')};
+    row.appendChild(b);p.firstChild.appendChild(row);
+  });
+  say(sug.length?'Encontrei '+sug.length+' possíve'+(sug.length>1?'is compromissos':'l compromisso')+' nos seus e-mails.':'Não encontrei compromissos novos nos seus e-mails.');
+}
+
+/* ---------- contato: ligar / WhatsApp ---------- */
+function contact(text,ph){
+  var digits=ph.replace(/\D/g,'');if(digits.length<=11)digits='55'+digits;
+  var r=parse(text.replace(ph,' '));
+  var msg='Olá! Podemos marcar uma reunião'+(r.hd?' '+human(r):'')+'?';
+  var p=$('panel');
+  p.innerHTML='<div class="card"><h2>CONTATO +'+esc(digits)+'</h2><div class="acts"><a class="btn solid" href="tel:+'+digits+'">Ligar</a><a class="btn solid" target="_blank" rel="noopener" href="https://wa.me/'+digits+'?text='+encodeURIComponent(msg)+'">WhatsApp</a><span id="ex"></span></div></div>';
+  if(r.hd){var b=document.createElement('button');b.className='btn';b.textContent='Criar evento';b.onclick=function(){eventCard(r)};$('ex').appendChild(b)}
+  say('Contato pronto. Escolha ligar ou enviar mensagem pelo WhatsApp.');
+}
+
+/* ---------- roteador de comandos ---------- */
+async function handle(text){
+  text=text.trim();if(!text)return;
+  $('heard').textContent='“'+text+'”';setState('thinking');
+  var n=fold(text);
+  try{
+    if(/\b(minha agenda|agenda de|o que (eu )?tenho|meus compromissos|compromissos de)\b/.test(n))return await showAgenda(/amanha/.test(n)?1:0);
+    if(/\be-?mails?\b/.test(n))return await scanMail();
+    var ph=text.match(/(\+?\d[\d\s().-]{8,}\d)/);
+    if(ph&&/\b(ligar|ligue|chamar|chame|mensagem|whatsapp|zap|mandar|enviar)\b/.test(n))return contact(text,ph[1]);
+    newEvent(parse(text));
+  }catch(e){say(e.message||'Algo deu errado.')}
+}
+$('send').addEventListener('click',function(){handle($('cmd').value);$('cmd').value=''});
+$('cmd').addEventListener('keydown',function(e){if(e.key==='Enter'){handle($('cmd').value);$('cmd').value=''}});
+Array.prototype.forEach.call(document.querySelectorAll('[data-q]'),function(b){b.addEventListener('click',function(){handle(b.getAttribute('data-q'))})});
+
+/* ---------- microfone ---------- */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null,on=false;
+$('eyeBtn').addEventListener('click',function(){
+  if(!SR){say('Este navegador não reconhece voz. Use o Chrome ou digite o comando.');return}
+  if(on){rec.stop();return}
+  try{speechSynthesis.cancel()}catch(e){}
+  rec=new SR();rec.lang='pt-BR';rec.interimResults=true;var final='';
+  rec.onstart=function(){on=true;setState('listening');$('heard').textContent=''};
+  rec.onresult=function(e){var s='';for(var i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;final=s;$('heard').textContent='“'+s+'”'};
+  rec.onerror=function(e){on=false;say(e.error==='not-allowed'?'Permita o microfone no navegador e tente de novo.':'Não consegui ouvir. Tente de novo.')};
+  rec.onend=function(){on=false;if(state==='listening'){if(final)handle(final);else setState('idle')}};
+  rec.start();
+});
+})();
+</script>
+</body>
+</html>
